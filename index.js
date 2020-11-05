@@ -53,6 +53,7 @@ const scrape = async () => {
             arrayOfElementsSplited.forEach(splited => {
                 switch(splited.start){
                     case "Nome popular": { obj.nome = splited.end.trim(); } break;
+                    case "Nome Popular": { obj.nome = splited.end.trim(); } break;
                     case "Família": { obj.familia = splited.end.trim(); } break;
                     case "Origem": { obj.origin = splited.end.trim(); } break;
                     case "pH": {
