@@ -70,9 +70,14 @@ const scrape = async () => {
                     case "Alimentação": { obj.alimentacao = splited.end.trim(); } break;
                 }
             });
+            if(obj.nome === undefined && obj.familia === undefined && obj.origin === undefined && obj.medPh === undefined && 
+                obj.sociabilidade === undefined && obj.medTemperatura === undefined && obj.durezaAgua === undefined && 
+                obj.medTamanho === undefined && obj.alimentacao === undefined) return undefined;
             return obj;
         }, {});
-        data.push(fish);
+        if(fish !== undefined) {
+            data.push(fish);
+        }
     }
     browser.close();
     return data;
