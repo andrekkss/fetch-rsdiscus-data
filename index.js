@@ -58,21 +58,23 @@ const scrape = async () => {
                     case "Origem": { obj.origin = splited.end.trim(); } break;
                     case "pH": {
                         const floats = splited.end.match(REGEX_FOR_GET_FLOAT_NUMBER).map(function(v) { return parseFloat(v); });
-                        obj.medPh = (floats[0] + floats[1])/2.0;
+                        obj.min_ph = floats[0];
+                        obj.max_ph = floats[1];
+                        obj.med_ph = parseFloat(Number((floats[0] + floats[1])/2.0).toFixed(2));
                     } break;
                     case "Sociabilidade": { obj.sociabilidade = splited.end.trim(); } break;
                     case "Temperatura": {
                         const floats = splited.end.match(REGEX_FOR_GET_FLOAT_NUMBER).map(function(v) { return parseFloat(v); });
-                        obj.medTemperatura = (floats[0] + floats[1])/2.0;;
+                        obj.min_temp = floats[0];
+                        obj.max_temp = floats[1];
+                        obj.med_temp = parseFloat(Number((floats[0] + floats[1])/2.0).toFixed(2));
                     } break;
                     case "Dureza da água": { obj.durezaAgua = splited.end.trim(); } break;
                     case "Tamanho adulto": { obj.medTamanho = splited.end.trim(); } break;
                     case "Alimentação": { obj.alimentacao = splited.end.trim(); } break;
                 }
             });
-            if(obj.nome === undefined && obj.familia === undefined && obj.origin === undefined && obj.medPh === undefined && 
-                obj.sociabilidade === undefined && obj.medTemperatura === undefined && obj.durezaAgua === undefined && 
-                obj.medTamanho === undefined && obj.alimentacao === undefined) return undefined;
+            if(obj.nome === undefined || obj.familia === undefined) return undefined;
             return obj;
         }, {});
         if(fish !== undefined) {
@@ -91,13 +93,44 @@ function createJson(nameOfFile, content){
     });
 }
 
+function getJsonAndCreateADataset(end){
+    console.log(end);
+    const rawData = fs.readFileSync(end);
+    const fishs = JSON.parse(rawData);
+    const obj = removeUnusedData(fishs);
+    return obj;
+}
+
+function getValidFloatNumber(number){
+    return parseFloat((+'0.0' +number).toFixed(1)).toFixed(1);
+}
+
+function removeUnusedData(data){
+    const newData = data.map(element => { 
+        return { 
+            min_ph: getValidFloatNumber(element.min_ph),
+            max_ph: getValidFloatNumber(element.max_ph),
+            med_ph: getValidFloatNumber(element.med_ph),
+            familia: element.familia,
+        }
+    });
+    return newData;
+}
+
 if(args[0] == undefined || args[1] == undefined){
     console.log("por favor insira os argumentos");
     console.log("por exemplo");
     console.log("node ./index.js http://www.rsdiscus.com.br/acaras-disco data.json");
 } else {
-    scrape().then((value) => {
-        createJson(args[1], value);
-    })
+    if(args[2] === "abs"){
+        console.log("Para abstrair os dados em um modelo para ia");
+        console.log("Insira a localização do json, no local");
+        const json = getJsonAndCreateADataset(args[0]);
+        createJson(args[1], json);
+    } else {
+        scrape().then((value) => {
+            createJson(args[1], value);
+        })
+    }
 }
 
